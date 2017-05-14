@@ -27,7 +27,7 @@ y_hat = tf.matmul(x_ph, W) + b
 
 # define the (stochastic!) loss
 loss = tf.reduce_mean(tf.square(y_hat - y_ph))
-tf.scalar_summary('log loss', tf.log(1.0 + loss))  # attention: this is the stochastic loss, i.e. it will be noisy
+tf.summary.scalar('log loss', tf.log(1.0 + loss))  # attention: this is the stochastic loss, i.e. it will be noisy
 
 # define the optimizer
 step_size = 0.1
@@ -39,8 +39,8 @@ init = tf.initialize_all_variables()
 with tf.Session() as sess:
     sess.run(init)
 
-    summary_op = tf.merge_all_summaries()
-    summary_writer = tf.train.SummaryWriter("train/ex2_{}".format(datetime.datetime.now().strftime("%s")), sess.graph)
+    summary_op = tf.summary.merge_all()
+    summary_writer = tf.summary.FileWriter("train/ex2_{}".format(datetime.datetime.now().strftime("%s")), sess.graph)
 
 # call the train_op many times, each time it will update the variables W and b according to their gradients
     for step in range(201):
