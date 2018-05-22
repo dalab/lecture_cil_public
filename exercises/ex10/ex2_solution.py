@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
-import datetime
-
 import tensorflow as tf
 import numpy as np
+import datetime
 
-# Create some noisy data
+# create some noisy data
 x_data = np.random.rand(1000, 2).astype(np.float32)
 correct_W = [[1, 2, 3], [4, 5, 6]]
 correct_b = [11, 12, 13]
@@ -13,43 +12,43 @@ correct_W, correct_b = map(lambda l: np.array(l, dtype=np.float32), (correct_W, 
 noise_level = 0.01
 y_data = np.dot(x_data, correct_W) + correct_b + np.random.normal(size=(1000, 3))
 
-# Define the symbolic variables
+
+# define the symbolic variables
 W = tf.Variable(tf.random_uniform(correct_W.shape, -1.0, 1.0))
 b = tf.Variable(tf.zeros(correct_b.shape))
 
-# Define the data placeholders
+# define the data placeholders
 batch_size = 10
 x_ph = tf.placeholder(tf.float32, shape=(batch_size, 2))
 y_ph = tf.placeholder(tf.float32, shape=(batch_size, 3))
 
-# Define the model (using placeholders)
-y_hat = ...
+# define the model (using placeholders)
+y_hat = tf.matmul(x_ph, W) + b
 
-# Define the (stochastic!) loss
-loss = ...
+# define the (stochastic!) loss
+loss = tf.reduce_mean(tf.square(y_hat - y_ph))
 tf.summary.scalar('log loss', tf.log(1.0 + loss))  # attention: this is the stochastic loss, i.e. it will be noisy
 
-# Define the optimizer
+# define the optimizer
 step_size = 0.1
 optimizer = tf.train.GradientDescentOptimizer(step_size)
 train_op = optimizer.minimize(loss)
 
-# Initialize the tensorflow session
+# initialize the tensorflow session
 init = tf.initialize_all_variables()
-
 with tf.Session() as sess:
     sess.run(init)
+
     summary_op = tf.summary.merge_all()
     summary_writer = tf.summary.FileWriter("train/ex2_{}".format(datetime.datetime.now().strftime("%s")), sess.graph)
 
-    # Call the train_op many times, each time it will update the variables W and b according to their gradients
+# call the train_op many times, each time it will update the variables W and b according to their gradients
     for step in range(201):
-
-        # Determine the minibatch
+        # determine the minibatch
         start_index = (batch_size * step) % x_data.shape[0]
         stop_index = start_index + batch_size
 
-        # Get the minibatch data
+        # get the minibatch data
         x_minibatch = x_data[start_index:stop_index]
         y_minibatch = y_data[start_index:stop_index]
 

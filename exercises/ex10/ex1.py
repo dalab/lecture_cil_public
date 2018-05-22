@@ -34,8 +34,8 @@ init = tf.initialize_all_variables()
 
 with tf.Session() as sess:
     sess.run(init)
-    summary_op = tf.merge_all_summaries()
-    summary_writer = tf.train.SummaryWriter("train/ex1_{}".format(datetime.datetime.now().strftime("%s")), sess.graph)
+    summary_op = tf.summary.merge_all()
+    summary_writer = tf.summary.FileWriter("train/ex1_{}".format(datetime.datetime.now().strftime("%s")), sess.graph)
 
     # Call the train_op many times, each time it will update the variables W and b according to their gradients
     for step in range(201):
