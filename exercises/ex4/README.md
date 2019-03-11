@@ -8,6 +8,5 @@ numpy
 scipy
 matplotlib
 pandas
-seaborn
 scikit-learn
 jupyter
