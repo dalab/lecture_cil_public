@@ -4,9 +4,9 @@ See https://github.com/kzhai/PyLDA.
 
 # Dependences
 
-numpy
-scipy
-matplotlib
-pandas
-scikit-learn
-jupyter
+- numpy
+- scipy
+- matplotlib
+- pandas
+- scikit-learn
+- jupyter
