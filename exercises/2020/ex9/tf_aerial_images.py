@@ -18,6 +18,7 @@ import tensorflow.python.platform
 
 import numpy
 import tensorflow as tf
+import sklearn.metrics
 
 NUM_CHANNELS = 3 # RGB images
 PIXEL_DEPTH = 255
@@ -33,6 +34,7 @@ RECORDING_STEP = 1000
 # Set image patch size in pixels
 # IMG_PATCH_SIZE should be a multiple of 4
 # image size should be an integer multiple of this number!
+# If you tweak this parameter, change the submission file accordingly
 IMG_PATCH_SIZE = 16
 
 tf.app.flags.DEFINE_string('train_dir', '/tmp/mnist',
@@ -73,7 +75,6 @@ def extract_data(filename, num_images):
     num_images = len(imgs)
     IMG_WIDTH = imgs[0].shape[0]
     IMG_HEIGHT = imgs[0].shape[1]
-    N_PATCHES_PER_IMAGE = (IMG_WIDTH/IMG_PATCH_SIZE)*(IMG_HEIGHT/IMG_PATCH_SIZE)
 
     img_patches = [img_crop(imgs[i], IMG_PATCH_SIZE, IMG_PATCH_SIZE) for i in range(num_images)]
     data = [img_patches[i][j] for i in range(len(img_patches)) for j in range(len(img_patches[i]))]
@@ -82,6 +83,8 @@ def extract_data(filename, num_images):
         
 # Assign a label to a patch v
 def value_to_class(v):
+    # You may tune this threshold parameter
+    # Also, see mask_to_submission.py
     foreground_threshold = 0.25 # percentage of pixels > 1 required to assign a foreground label to a patch
     df = numpy.sum(v)
     if df > foreground_threshold:
@@ -185,7 +188,7 @@ def make_img_overlay(img, predicted_img):
 
 def main(argv=None):  # pylint: disable=unused-argument
 
-    data_dir = 'training/'
+    data_dir = './training/training/'
     train_data_filename = data_dir + 'images/'
     train_labels_filename = data_dir + 'groundtruth/' 
 
@@ -375,15 +378,15 @@ def main(argv=None):  # pylint: disable=unused-argument
         if train == True:
             summary_id = '_0'
             s_data = get_image_summary(data)
-            filter_summary0 = tf.image_summary('summary_data' + summary_id, s_data)
+            filter_summary0 = tf.summary.image('summary_data' + summary_id, s_data)
             s_conv = get_image_summary(conv)
-            filter_summary2 = tf.image_summary('summary_conv' + summary_id, s_conv)
+            filter_summary2 = tf.summary.image('summary_conv' + summary_id, s_conv)
             s_pool = get_image_summary(pool)
-            filter_summary3 = tf.image_summary('summary_pool' + summary_id, s_pool)
+            filter_summary3 = tf.summary.image('summary_pool' + summary_id, s_pool)
             s_conv2 = get_image_summary(conv2)
-            filter_summary4 = tf.image_summary('summary_conv2' + summary_id, s_conv2)
+            filter_summary4 = tf.summary.image('summary_conv2' + summary_id, s_conv2)
             s_pool2 = get_image_summary(pool2)
-            filter_summary5 = tf.image_summary('summary_pool2' + summary_id, s_pool2)
+            filter_summary5 = tf.summary.image('summary_pool2' + summary_id, s_pool2)
 
         return out
 
@@ -391,7 +394,7 @@ def main(argv=None):  # pylint: disable=unused-argument
     logits = model(train_data_node, True) # BATCH_SIZE*NUM_LABELS
     # print 'logits = ' + str(logits.get_shape()) + ' train_labels_node = ' + str(train_labels_node.get_shape())
     loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
-        logits, train_labels_node))
+        logits=logits, labels=train_labels_node))
     tf.summary.scalar('loss', loss)
 
     all_params_node = [conv1_weights, conv1_biases, conv2_weights, conv2_biases, fc1_weights, fc1_biases, fc2_weights, fc2_biases]
@@ -448,7 +451,7 @@ def main(argv=None):  # pylint: disable=unused-argument
             tf.initialize_all_variables().run()
 
             # Build the summary operation based on the TF collection of Summaries.
-            summary_op = tf.merge_all_summaries()
+            summary_op = tf.summary.merge_all()
             summary_writer = tf.summary.FileWriter(FLAGS.train_dir,graph_def=s.graph_def)
             print ('Initialized!')
             # Loop through training steps.
